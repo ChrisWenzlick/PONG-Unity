@@ -32,7 +32,7 @@ public class Ball : MonoBehaviour {
 		// Game over
 		if(direction.x < 0 && transform.position.x < GameplayManager.bottomLeft.x + radius)
 		{
-			ResetBall(225.0f, 315.0f);
+			ResetBall(-20.0f, 20.0f);
 			/*
 			// End game with right player victory
 			Debug.Log("Right player wins!");
@@ -42,7 +42,7 @@ public class Ball : MonoBehaviour {
 		}
 		else if(direction.x > 0 && transform.position.x > GameplayManager.topRight.x - radius)
 		{
-			ResetBall(45.0f, 135.0f);
+			ResetBall(160.0f, 200.0f);
 			/*
 			// End game with left player victory
 			Debug.Log("Left player wins!");
@@ -54,7 +54,6 @@ public class Ball : MonoBehaviour {
 	
 	void OnTriggerEnter2D(Collider2D other)
 	{
-        Debug.Log("Trigger entered");
 		if(other.tag == "Paddle")
 		{
 			bool isRight = other.GetComponent<Paddle>().isRight;
@@ -66,12 +65,10 @@ public class Ball : MonoBehaviour {
 		}
 	}
 
-	// NOTE: this method currently doesn't return the correct vectors
 	public void ResetBall(float minAngle = 0.0f, float maxAngle = 0.0f)
     {
 		transform.position = Vector3.zero;
 		direction = GetRandomLaunchVector(minAngle, maxAngle);
-		Debug.Log("(" + minAngle + ", " + maxAngle + ")  ->  " + direction);
     }
 
 	/// <summary>
@@ -94,7 +91,7 @@ public class Ball : MonoBehaviour {
 		// Return a random unit vector between the two angles, inclusive
 		float newAngle = Random.Range(minAngle, maxAngle);
 		newAngle = ConvertTo360Angle(newAngle);
-		return RadianToVector2(newAngle * Mathf.Deg2Rad);
+		return DegreeToVector2(newAngle);
 	}
 
 	private float ConvertTo360Angle(float angle)
