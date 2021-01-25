@@ -6,11 +6,10 @@ public class Paddle : MonoBehaviour {
 
 	[SerializeField]
 	float speed = 10.0f;
-	
-	float height;
-	
+		
 	string input;
 	public bool isRight;
+	public float height;
 
 	// Use this for initialization
 	void Start () {
@@ -50,7 +49,7 @@ public class Paddle : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		// Set the paddle move distance
-		float move = Input.GetAxis(input) * speed * Time.deltaTime; // Should use speed instead of hard-coded value
+		float move = Input.GetAxis(input) * speed * Time.deltaTime;
 		
 		if(move < 0 && transform.position.y < (GameplayManager.bottomLeft.y + height / 2))
 			move = 0;

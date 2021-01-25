@@ -5,13 +5,18 @@ using UnityEngine;
 public class Ball : MonoBehaviour {
 
 	[SerializeField]
-	float startingSpeedScale;
+	[Min(0.0f), Tooltip("The maximum speed at which the ball can travel")]
+	float maxSpeed = 30.0f;
 
 	[SerializeField]
-	float maxSpeed;
+	[Range(0.0f, 1.0f), Tooltip("The starting speed of the ball, expressed as a fraction of the max speed")]
+	float startingSpeedScale = 0.1f;
+
+	[SerializeField]
+	[Range(0.0f, 1.0f), Tooltip("The amount that will be added to the ball's movement speed upon contacting a paddle, expressed as a fraction of the max speed")]
+	float speedInfluence = 0.05f;
 	
 	float radius;
-	float currentSpeedScale = 0.1f;
 	float currentSpeed;
 	Vector2 currentMoveVector;
 	
@@ -31,8 +36,6 @@ public class Ball : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		currentSpeed = currentSpeedScale * maxSpeed;
-
 		transform.Translate(currentMoveVector * currentSpeed * Time.deltaTime);
 		
 		// Top and bottom bounces
@@ -60,19 +63,37 @@ public class Ball : MonoBehaviour {
 	{
 		if(other.CompareTag("Paddle"))
 		{
-			bool isRight = other.GetComponent<Paddle>().isRight;
+			Paddle paddle = other.GetComponent<Paddle>();
+			bool isRight = paddle.isRight;
 			
 			// Reverse ball direction
 			if(isRight && currentMoveVector.x > 0)
 				currentMoveVector.x = -currentMoveVector.x;
 			else if(!isRight && currentMoveVector.x < 0)
 				currentMoveVector.x = -currentMoveVector.x;
+
+			// Modify the ball's travel based on where it contacted the paddle
+			// *NOTE: This will need to be modified to support nonstandard paddle axes, such as horizontal and diagonal
+			Vector2 offsetFromPaddle = transform.position - other.transform.position;
+			float distanceFromCenter = Mathf.Clamp(offsetFromPaddle.y / (paddle.height / 2), -1.0f, 1.0f);
+			float horizontalInfluence = (isRight) ? (1 - Mathf.Abs(distanceFromCenter)) * -1 : (1 - Mathf.Abs(distanceFromCenter));
+
+			// Add more speed vertically when near the paddle edge and horizontally when near the paddle center
+			Vector2 influenceVector = new Vector3(horizontalInfluence, distanceFromCenter);
+			currentMoveVector += influenceVector;
+			currentMoveVector.Normalize();
+
+			// Increase the overall speed
+			currentSpeed += speedInfluence * maxSpeed;
+			if (currentSpeed > maxSpeed)
+				currentSpeed = maxSpeed;
 		}
 	}
 
 	public void ResetBall(float minAngle = 0.0f, float maxAngle = 0.0f)
     {
 		transform.position = Vector3.zero;
+		currentSpeed = startingSpeedScale * maxSpeed;
 		currentMoveVector = GetRandomLaunchVector(minAngle, maxAngle);
     }
 
