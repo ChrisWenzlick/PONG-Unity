@@ -5,70 +5,75 @@ using UnityEngine;
 public class Ball : MonoBehaviour {
 
 	[SerializeField]
-	float speed;
+	float startingSpeedScale;
+
+	[SerializeField]
+	float maxSpeed;
 	
 	float radius;
-	Vector2 direction;
+	float currentSpeedScale = 0.1f;
+	float currentSpeed;
+	Vector2 currentMoveVector;
 	
 
 	// Use this for initialization
 	void Start () {
 		radius = transform.localScale.x / 2;
-		ResetBall(); // need to fix so that unreachable serves don't happen (straight up or down)
+
+		// Start the ball in a random direction to either the left or the right
+		if(Random.value > 0.5)
+			// Send to right player
+			ResetBall(-20.0f, 20.0f);
+		else
+			// Send to left player
+			ResetBall(160.0f, 200.0f);
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		transform.Translate(direction * speed * Time.deltaTime);
+		currentSpeed = currentSpeedScale * maxSpeed;
+
+		transform.Translate(currentMoveVector * currentSpeed * Time.deltaTime);
 		
 		// Top and bottom bounces
-		if(direction.y < 0 && transform.position.y < GameplayManager.bottomLeft.y + radius)
-			direction.y = -direction.y;
-		else if(direction.y > 0 && transform.position.y > GameplayManager.topRight.y - radius)
-			direction.y = -direction.y;
+		if(currentMoveVector.y < 0 && transform.position.y < GameplayManager.bottomLeft.y + radius)
+			currentMoveVector.y = -currentMoveVector.y;
+		else if(currentMoveVector.y > 0 && transform.position.y > GameplayManager.topRight.y - radius)
+			currentMoveVector.y = -currentMoveVector.y;
 		
 		
 		
 		// Game over
-		if(direction.x < 0 && transform.position.x < GameplayManager.bottomLeft.x + radius)
+		if(currentMoveVector.x < 0 && transform.position.x < GameplayManager.bottomLeft.x + radius)
 		{
+			// Right player scored
 			ResetBall(-20.0f, 20.0f);
-			/*
-			// End game with right player victory
-			Debug.Log("Right player wins!");
-			Time.timeScale = 0;
-			enabled = false;
-			*/
 		}
-		else if(direction.x > 0 && transform.position.x > GameplayManager.topRight.x - radius)
+		else if(currentMoveVector.x > 0 && transform.position.x > GameplayManager.topRight.x - radius)
 		{
+			// Left player scored
 			ResetBall(160.0f, 200.0f);
-			/*
-			// End game with left player victory
-			Debug.Log("Left player wins!");
-			Time.timeScale = 0;
-			enabled = false;
-			*/
 		}
 	}
 	
 	void OnTriggerEnter2D(Collider2D other)
 	{
-		if(other.tag == "Paddle")
+		if(other.CompareTag("Paddle"))
 		{
 			bool isRight = other.GetComponent<Paddle>().isRight;
 			
-			if(isRight && direction.x > 0)
-				direction.x = -direction.x;
-			else if(!isRight && direction.x < 0)
-				direction.x = -direction.x;
+			// Reverse ball direction
+			if(isRight && currentMoveVector.x > 0)
+				currentMoveVector.x = -currentMoveVector.x;
+			else if(!isRight && currentMoveVector.x < 0)
+				currentMoveVector.x = -currentMoveVector.x;
 		}
 	}
 
 	public void ResetBall(float minAngle = 0.0f, float maxAngle = 0.0f)
     {
 		transform.position = Vector3.zero;
-		direction = GetRandomLaunchVector(minAngle, maxAngle);
+		currentMoveVector = GetRandomLaunchVector(minAngle, maxAngle);
     }
 
 	/// <summary>
