@@ -50,7 +50,7 @@ public class Paddle : MonoBehaviour {
 	void Update () {
 		// Set the paddle move distance
 		float move = Input.GetAxis(input) * speed * Time.deltaTime;
-		
+
 		if(move < 0 && transform.position.y < (GameplayManager.bottomLeft.y + height / 2))
 			move = 0;
 		else if(move > 0 && transform.position.y > (GameplayManager.topRight.y - height / 2))
