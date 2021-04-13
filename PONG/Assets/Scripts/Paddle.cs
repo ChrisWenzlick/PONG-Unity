@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class Paddle : MonoBehaviour {
 
@@ -10,6 +11,8 @@ public class Paddle : MonoBehaviour {
 	string input;
 	public bool isRight;
 	public float height;
+
+	private Vector2 currentMovement;
 
 	// Use this for initialization
 	void Start () {
@@ -47,16 +50,24 @@ public class Paddle : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void Update ()
+	{
 		// Set the paddle move distance
-		float move = Input.GetAxis(input) * speed * Time.deltaTime;
+		float moveDistance = currentMovement.y * speed * Time.deltaTime;
 
-		if(move < 0 && transform.position.y < (GameplayManager.bottomLeft.y + height / 2))
-			move = 0;
-		else if(move > 0 && transform.position.y > (GameplayManager.topRight.y - height / 2))
-			move = 0;
-		
+		// Keep the paddle on-screen
+		if (moveDistance < 0 && transform.position.y < (GameplayManager.bottomLeft.y + height / 2))
+			moveDistance = 0;
+		else if (moveDistance > 0 && transform.position.y > (GameplayManager.topRight.y - height / 2))
+			moveDistance = 0;
+
 		// Move the paddle
-		transform.Translate(move * Vector2.up);
+		transform.Translate(moveDistance * Vector2.up);
+	}
+
+	public void OnMove(InputValue input)
+    {
+		// Get the Vector2 representing the current movement input
+		currentMovement = input.Get<Vector2>();
 	}
 }
